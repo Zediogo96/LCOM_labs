@@ -7,6 +7,8 @@
 
 #include "keyboard.h"
 
+#include "timer.c"
+
 int main(int argc, char *argv[]) {
   // sets the language of LCF messages (can be either EN-US or PT-PT)
   lcf_set_language("EN-US");
@@ -106,13 +108,72 @@ int(kbd_test_poll)() {
   kbc_issue_command(0x60, 0X64);
   kbc_issue_command(out_byte | BIT(0), 0x64);
 
-
   return 0;
 }
 
+extern int no_interrupts; 
+
 int(kbd_test_timed_scan)(uint8_t n) {
-  /* To be completed by the students */
-  printf("%s is not yet implemented!\n", __func__);
+  
+  int ipc_status, r;
+  message msg;
+
+  uint8_t kbd_bit_no = KBD_IRQ, timer_bit_no = TIMER0_IRQ;
+
+  uint8_t time = n;
+
+  uint32_t kbd_irq_set = BIT(kbd_bit_no);
+  uint32_t timer_irq_set = BIT(timer_bit_no);
+
+  uint8_t bytes[2], size = 0;
+
+  no_interrupts = 0;
+
+  kbd_subscribe_int(&kbd_bit_no);
+  timer_subscribe_int(&timer_bit_no);
+
+  while(bytes[0] != ESC_BREAKCODE) { /* You may want to use a different condition */
+      /* Get a request message. */
+      if ( (r = driver_receive(ANY, &msg, &ipc_status)) != 0 ) { 
+          printf("driver_receive failed with: %d", r);
+          continue;
+      }
+      if (is_ipc_notify(ipc_status)) { /* received notification */
+          switch (_ENDPOINT_P(msg.m_source)) {
+            case HARDWARE: /* hardware interrupt notification */				
+                  if (msg.m_notify.interrupts & kbd_irq_set) { /* subscribed interrupt */
+                      kbd_ih();
+
+                      bytes[size] = out_byte;
+
+                      if (bytes[size] != 0xE0) {
+                        kbd_print_scancode(isMakeCode(bytes[0]), size + 1 , bytes);
+                        size = 0;
+
+                        time = 0;
+                        no_interrupts = 0;
+                      }
+                      else {size++;}
+                  }
+
+                  if (msg.m_notify.interrupts & timer_irq_set) {
+                    timer_int_handler();
+                    if (no_interrupts % 60 == 0) {
+                      time--;
+                    }
+                  }
+                  break;
+              default:
+                  break; /* no other notifications expected: do nothing */	
+          }
+      } else { /* received a standard message, not a notification */
+          /* no standard messages expected: do nothing */
+      }
+  }
+
+  kbd_unsubscribe_int();
+
+  return 0;
 
   return 1;
 }

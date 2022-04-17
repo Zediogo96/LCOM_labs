@@ -6,6 +6,8 @@
 
 #include "i8042.h"
 
+#include "i8254.h"
+
 
 void (kbd_ih)();
 
