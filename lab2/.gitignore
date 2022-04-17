@@ -3,3 +3,5 @@ timer.o
 utils.o
 .clang-format
 .vscode
+.gdbinit
+lab2

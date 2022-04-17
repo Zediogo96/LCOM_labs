@@ -66,10 +66,46 @@ int (timer_display_conf)(uint8_t timer, uint8_t st, enum timer_status_field fiel
 }
 
 int (timer_set_frequency)(uint8_t timer, uint32_t freq) {
-  /* To be implemented by the students */
-  printf("%s is not yet implemented!\n", __func__);
+  
 
-  return 1;
+  uint16_t IV = TIMER_FREQ / freq;
+
+  uint8_t CMD_WORD = TIMER_LSB_MSB, timer_port, status, iv_lsb, iv_msb;
+
+  switch(timer) {
+    
+    case 0: 
+      CMD_WORD |= TIMER_SEL0;
+      timer_port = TIMER_0;
+      break;
+
+    case 1:
+      CMD_WORD |= TIMER_SEL1;
+      timer_port = TIMER_1;
+      break;
+    
+    case 2:
+      CMD_WORD |= TIMER_SEL2;
+      timer_port = TIMER_2;
+      break;
+
+    default: return 1;
+  }
+
+  if (timer_get_conf(timer, &status)) return 1;
+ 
+  /** 4 LSB should not be changed, according to PP **/
+  uint8_t mask = 0x0F;
+  CMD_WORD |= (status & mask);
+
+  if (sys_outb(TIMER_CTRL, CMD_WORD)) return 1;
+
+  util_get_LSB(IV, &iv_lsb);
+  util_get_MSB(IV, &iv_msb);
+
+  if (sys_outb(timer_port, iv_lsb) || sys_outb(timer_port, iv_msb)) return 1;
+
+  return 0;
 }
 
 int (timer_subscribe_int)(uint8_t *bit_no) {
