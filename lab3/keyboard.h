@@ -1,20 +1,19 @@
 #ifndef _KEYBOARD_H_
 #define _KEYBOARD_H_
 
-#include "i8042.h"
-#include "i8254.h"
 #include "utils.h"
+#include <minix/sysutil.h>
 
-int kbc_read_outb();
+#include "i8042.h"
 
-int kbd_subscribe_int(uint8_t *bit_no);
 
-int kbd_unsubscribe_int();
+void (kbd_ih)();
 
-int kbc_issue_command(uint8_t cmd, int port);
+int kbd_read_outb();
 
-void (kbc_poll)();
+int (kbd_subscribe_int)(uint8_t *bit_no);
 
-void(kbc_ih)();
+int (kbd_unsubscribe_int)();
 
-#endif //_KEYBOARD_H_
+
+#endif // _KEYBOARD_H_

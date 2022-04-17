@@ -5,3 +5,8 @@ utils.o
 .vscode
 .gdbinit
 lab2
+
+keyboard.o
+keyboard.h
+lab3
+lab3.o

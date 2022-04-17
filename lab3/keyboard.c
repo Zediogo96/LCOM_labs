@@ -1,90 +1,61 @@
 #include <lcom/lcf.h>
 #include <minix/sysutil.h>
-
-#include <stdint.h>
+#
 
 #include "keyboard.h"
 
-int hook_id;
 
-uint8_t out_byte;
+int out_byte;
 
-int kbc_read_outb() {
-    
-    out_byte = 0;
+int kbd_read_outb() {
+
     uint8_t status;
+    out_byte = 0;
 
-    // MEANING THAT WE WANT TO PERFORM A READ
-    if (util_sys_inb(KBC_ST_REG, &status) != 0) return 1; // REG 0x64
+    if (util_sys_inb(KBD_STAT_REG, &status)) return 1;  
 
+    if (status & KBC_OUTPUT_BUFFER_FULL) {
 
-    if (status & KBC_OBF_FLAG) {
-        uint8_t data;
+        uint8_t tmp_data;
 
-        /** We do this first step because it is said that the register should be read regardless **/
-        if (util_sys_inb(KBC_OUTPUT_BUF_REG, &data)) return 1;
+        if (util_sys_inb(KBD_OUT_BUF, &tmp_data)) return 1;
 
         if ((status & (KBC_PARITY_ERROR | KBC_TIMEOUT_ERROR)) == 0) {
-            out_byte = data;
+            out_byte = tmp_data;
             return 0;
         }
-
         else {
-            printf("%s: Parity or Timeout error ocurred \n", __func__); 
+            printf("Parity or Timeout error!");
             return 1;
         }
     }
-
     return 1;
 }
 
-void (kbc_ih)() {
-    while (1) {
-        if (kbc_read_outb() == 0) {
-            break;
-        }
+void (kbd_ih)() {
+
+    while(1) {
+        
+        if (kbd_read_outb() == 0) break;
         tickdelay(micros_to_ticks(DELAY_US));
     }
-    
 }
 
-void (kbc_poll)(){
-    kbc_read_outb();
-    tickdelay(micros_to_ticks(DELAY_US));
-}
+static int hook_id;
 
-int kbc_issue_command(uint8_t cmd, int port) {
+int (kbd_subscribe_int)(uint8_t *bit_no) {
 
-    uint8_t stat = 0;
-
-    int cycles = 0;
-
-    while (cycles++ < 20) {
-
-        if (util_sys_inb(KBC_ST_REG , &stat) != 0) return 1;
-
-        if ((stat & KBC_IBF_FLAG) == 0) {
-            sys_outb(port, cmd);
-            return 0;
-        }
-        tickdelay(micros_to_ticks(DELAY_US));
-    }
-    return 1;
-}
-
-
-int kbd_subscribe_int(uint8_t *bit_no) {
-    hook_id = KBC_IRQ; // 1
-
+    hook_id = KBD_IRQ;
     *bit_no = hook_id;
 
-    if (sys_irqsetpolicy(KBC_IRQ, IRQ_REENABLE | IRQ_EXCLUSIVE, &hook_id)) return 1;
+    if (sys_irqsetpolicy(KBD_IRQ, (IRQ_REENABLE | IRQ_EXCLUSIVE), &hook_id)) return 1;
 
     return 0;
+
 }
 
-int kbd_unsubscribe_int() {
-    
+int(kbd_unsubscribe_int)() {
+
     if (sys_irqrmpolicy(&hook_id)) return 1;
 
     return 0;
