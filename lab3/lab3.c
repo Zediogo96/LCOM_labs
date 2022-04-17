@@ -80,10 +80,34 @@ int(kbd_test_scan)() {
 }
 
 int(kbd_test_poll)() {
-  /* To be completed by the students */
-  printf("%s is not yet implemented!\n", __func__);
 
-  return 1;
+  uint8_t bytes[2]; 
+  uint8_t size = 0;
+
+  out_byte = 0;
+
+  while (bytes[0] != ESC_BREAKCODE) {
+    kbd_poll();
+    if (out_byte) {
+      bytes[size] = out_byte;
+
+      if (out_byte != 0XE0) {
+        kbd_print_scancode(isMakeCode(bytes[0]), 1, bytes);
+        size = 0;
+      }
+      else size++;
+    }
+
+  }
+
+  kbc_issue_command(0x20, 0x64);
+  kbd_read_outb();
+
+  kbc_issue_command(0x60, 0X64);
+  kbc_issue_command(out_byte | BIT(0), 0x64);
+
+
+  return 0;
 }
 
 int(kbd_test_timed_scan)(uint8_t n) {

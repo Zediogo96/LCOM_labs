@@ -41,6 +41,11 @@ void (kbd_ih)() {
     }
 }
 
+void (kbd_poll)() {
+    kbd_read_outb();
+    tickdelay(micros_to_ticks(DELAY_US));
+}
+
 static int hook_id;
 
 int (kbd_subscribe_int)(uint8_t *bit_no) {
@@ -59,4 +64,17 @@ int(kbd_unsubscribe_int)() {
     if (sys_irqrmpolicy(&hook_id)) return 1;
 
     return 0;
+}
+
+int (kbc_issue_command)(uint8_t cmd, uint8_t port) {
+    uint8_t status;
+
+    if (util_sys_inb(KBD_STAT_REG, &status)) return 1;
+
+    if ((status & KBC_INPUT_BUFFER_FULL) == 0) {
+        sys_outb(port, cmd);
+        return 0;
+    }
+
+    return 1;
 }
