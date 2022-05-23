@@ -1,6 +1,7 @@
 #ifndef _MOUSE_H_
 #define _MOUSE_H_
 
+#include <lcom/lcf.h>
 #include "utils.h"
 #include "i8042.h"
 
@@ -18,6 +19,17 @@ struct packet process_packets(uint8_t * bytes);
 
 int mouse_disable_reporting();
 
-int (kbc_issue_command)(uint8_t cmd, int port);
+int kbc_issue_command(uint32_t cmd, int port);
+
+#define MOUSE_LB_CLICK BIT(0)
+#define MOUSE_RB_CLICK BIT(1)
+#define MOUSE_MB_CLICK BIT(2)
+
+#define MOUSE_X_SIGN BIT(4)
+#define MOUSE_Y_SIGN BIT(5)
+
+#define MOUSE_X_OVFL BIT(6)
+#define MOUSE_Y_OVFL BIT(7)
+
 
 #endif
