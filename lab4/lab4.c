@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "i8042.h"
+
+#include "mouse.h"
+
 // Any header files included below this line should have been created by you
 
 int main(int argc, char *argv[]) {
@@ -30,27 +34,26 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
+uint8_t out_byte;
+extern int hook_ID;
 
-int (mouse_test_packet)(uint32_t cnt) {
-    /* To be completed */
-    printf("%s(%u): under construction\n", __func__, cnt);
-    return 1;
+extern int hookID;
+extern uint8_t out_byte;
+
+int(mouse_test_packet)(uint32_t cnt) {
+
+  
+
+  while (packets_received < cnt) { /* You may want to use a different condition */
+  }
 }
+
+
+
 
 int (mouse_test_async)(uint8_t idle_time) {
-    /* To be completed */
-    printf("%s(%u): under construction\n", __func__, idle_time);
-    return 1;
+  /* To be completed */
+  printf("%s(%u): under construction\n", __func__, idle_time);
+  return 0;
 }
 
-int (mouse_test_gesture)() {
-    /* To be completed */
-    printf("%s: under construction\n", __func__);
-    return 1;
-}
-
-int (mouse_test_remote)(uint16_t period, uint8_t cnt) {
-    /* To be completed */
-    printf("%s(%u, %u): under construction\n", __func__, period, cnt);
-    return 1;
-}
