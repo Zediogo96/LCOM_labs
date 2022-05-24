@@ -117,7 +117,7 @@ int kbc_read_outb() {
 }
 
 int kbc_issue_command(uint32_t cmd, int port) {
-  uint8_t status = 0;
+  uint8_t status = 0; 
   if (util_sys_inb(0x64, &status)) {
     if ((status & BIT(1)) == 0) {
       printf("input buffer full");
