@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
   // [comment this out if you don't want/need it]
   lcf_trace_calls("/home/lcom/labs/lab5/trace.txt");
 
-  // enables to save the output of printf function calls on a file
+  // enables to save the output >of printf function calls on a file
   // [comment this out if you don't want/need it]
   lcf_log_output("/home/lcom/labs/lab5/output.txt");
 
@@ -34,6 +34,12 @@ int main(int argc, char *argv[]) {
 }
 
 int(video_test_init)(uint16_t mode, uint8_t delay) {
+
+  vg_init(mode);
+  vg_draw_hline(10, 10, 30, 0x004C01);
+  vg_draw_rectangle(10, 10, 100, 100, 0x004C01);
+  sleep(delay);
+  vg_exit();
 
 
   return 0;

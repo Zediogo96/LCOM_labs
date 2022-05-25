@@ -8,7 +8,7 @@ int vbe_call(struct reg86 *r) {
 }
 
 void *vbe_map_vram(unsigned int phys_base_ptr, unsigned int vram_size) {
-  return NULL;
+  return NULL;  
 }
 
 int vbe_set_mode(uint16_t mode) {
